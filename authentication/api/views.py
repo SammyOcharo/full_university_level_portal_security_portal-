@@ -7,6 +7,8 @@ from rest_framework import status
 from django.contrib.auth import authenticate
 from django.contrib.auth import get_user_model
 from authentication.api.serializers import SecurityLoginSerializer
+from authentication.models import SecurityLoginOtp
+from email_services.email_service import login_otp_email
 
 User = get_user_model()
 
@@ -84,7 +86,7 @@ class SecurityLoginAPIView(APIView):
             otp_code = random.randint(111111, 999999)
 
             #Save otp to table
-            if not LoginOtp.objects.create(email=username, otp=otp_code):
+            if not SecurityLoginOtp.objects.create(email=username, otp=otp_code):
                 return Response({
                     'status': False,
                     'message': 'Error saving otp to database'
