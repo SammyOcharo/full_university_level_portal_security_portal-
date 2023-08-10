@@ -3,6 +3,7 @@ import re
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
+from rest_framework_simplejwt.tokens import RefreshToken
 
 from django.contrib.auth import authenticate
 from django.contrib.auth import get_user_model
@@ -54,7 +55,7 @@ class SecurityLoginAPIView(APIView):
             print(user.password)
             
 
-            allowed_roles = ['students']
+            allowed_roles = ['security']
             print(user.role.short_name)
 
             if not user.role.short_name in allowed_roles:
@@ -100,14 +101,107 @@ class SecurityLoginAPIView(APIView):
                 }, status=status.HTTP_400_BAD_REQUEST)
 
             return Response({
-                    'status': False,
-                    'message': 'Login OTP sent via email please check to complete login.'
-                }, status=status.HTTP_200_OK)
+                'status': True,
+                'message': 'Login OTP sent via email please check to complete login.'
+            }, status=status.HTTP_200_OK)
 
         except Exception as e:
             print(str(e))
 
+            Response({
+                'status': False,
+                'message': 'Failed to login!'
+            }, status=status.HTTP_400_BAD_REQUEST)
+
 
 
 class SecurityLoginApproveAPIView(APIView):
-    pass
+    authentication_classes = []
+    serializer_class = SecurityLoginSerializer
+
+    def post(self, request):
+        try:
+            data = request.data
+
+            serializer = self.serializer_class(data=data)
+
+            if not serializer.is_valid():
+                return Response({
+                    'status': False,
+                    'message': 'Invalid data provided.',
+                    'error': serializer.errors
+                }, status=status.HTTP_400_BAD_REQUEST)
+            
+            username = request.data.get('username')
+            otp = request.data.get('otp')
+
+            otp = int(otp)
+
+            email_regex = r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b'
+            valid_email = re.fullmatch(email_regex, username)
+
+            if not valid_email:
+                return Response({
+                    'status': False,
+                    'message': 'Invalid email provided'
+                }, status=status.HTTP_400_BAD_REQUEST)
+            
+            user = User.objects.filter(email=username)
+
+            if not user.exists():
+                return Response({
+                    'status': False,
+                    'message': 'User does not exist'
+                }, status=status.HTTP_404_NOT_FOUND)
+            
+            user = user.first()
+            allowed_roles = ['security']
+            if not user.role.short_name in allowed_roles:
+                return Response({
+                    'status': False,
+                    'message': f'user with this role {user.role.short_name} not allowed to access this portal',
+                }, status=status.HTTP_400_BAD_REQUEST)
+            
+            login_otp = SecurityLoginOtp.objects.filter(email=username)
+
+            if not login_otp.exists():
+                return Response({
+                    'status': False,
+                    'message': 'otp with this email does not exist'
+                }, status=status.HTTP_404_NOT_FOUND)
+            
+            login_otp = login_otp.last()
+            print(type(login_otp.otp))
+            print(type(otp))
+            if login_otp.otp != otp:
+                return Response({
+                    'status': False,
+                    'message': 'otp mismatch'
+                }, status=status.HTTP_400_BAD_REQUEST)
+            
+            if login_otp.is_validated == 1:
+                return Response({
+                    'status': False,
+                    'message': 'otp already validated'
+                }, status=status.HTTP_400_BAD_REQUEST)
+            
+            login_otp.is_validated=1
+            login_otp.save()
+
+            print("otp validated")
+
+            refresh = RefreshToken.for_user(user)
+
+            return Response({
+                'status': True,
+                'message': 'Logged in successfully',
+                'access_token': str(refresh.access_token)
+            }, status=status.HTTP_200_OK)
+
+        except Exception as e:
+            print(e)
+
+            return Response({
+                'status': False,
+                'message': 'Could not log you in'
+            }, status=status.HTTP_400_BAD_REQUEST)
