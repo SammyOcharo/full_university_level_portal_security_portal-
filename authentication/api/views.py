@@ -7,7 +7,7 @@ from rest_framework_simplejwt.tokens import RefreshToken
 
 from django.contrib.auth import authenticate
 from django.contrib.auth import get_user_model
-from authentication.api.serializers import SecurityLoginSerializer
+from authentication.api.serializers import SecurityForgotPasswordSerializer, SecurityLoginSerializer, SecurityNewPasswordSerializer, SecurityResendOtpSerializer, SecurityVerifyOtpForgotPasswordSerializer
 from authentication.models import SecurityLoginOtp
 from email_services.email_service import login_otp_email
 
@@ -207,13 +207,17 @@ class SecurityLoginApproveAPIView(APIView):
             }, status=status.HTTP_400_BAD_REQUEST)
         
 class SecurityForgotPasswordAPIView(APIView):
-    pass
+    authentication_classes = []
+    serializer_class = SecurityForgotPasswordSerializer
 
 class SecurityVerifyOtpForgotPasswordAPIView(APIView):
-    pass
+    authentication_classes = []
+    serializer_class = SecurityVerifyOtpForgotPasswordSerializer
 
 class SecurityNewPasswordAPIView(APIView):
-    pass
+    authentication_classes = []
+    serializer_class = SecurityNewPasswordSerializer
 
 class SecurityResendOtpAPIView(APIView):
-    pass
+    authentication_classes = []
+    serializer_class = SecurityResendOtpSerializer
