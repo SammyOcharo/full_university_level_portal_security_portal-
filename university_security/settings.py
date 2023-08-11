@@ -26,7 +26,7 @@ if DEBUG:
         'rest_framework.renderers.BrowsableAPIRenderer',
     )
 
-
+AUTH_USER_MODEL = 'authentication.User'
 
 # Application definition
 
