@@ -23,7 +23,7 @@ class User(AbstractUser):
     mobile_number = models.CharField(max_length=15)
     id_number = models.CharField(max_length=9, unique=True, blank=False)
     username = models.EmailField(unique=True, null=False)
-    role = models.ForeignKey(Roles, on_delete=models.DO_NOTHING, related_name='user_student_role', null=True)
+    role = models.ForeignKey(Roles, on_delete=models.DO_NOTHING, related_name='user_security_role', null=True)
     status = models.IntegerField(default=0)
     full_name = models.CharField(max_length=30)
 

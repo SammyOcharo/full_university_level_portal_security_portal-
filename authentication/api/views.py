@@ -3,7 +3,7 @@ import re
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-from rest_framework_simple
+from rest_framework_simplejwt.tokens import RefreshToken
 
 from django.contrib.auth import authenticate
 from django.contrib.auth import get_user_model
@@ -205,3 +205,15 @@ class SecurityLoginApproveAPIView(APIView):
                 'status': False,
                 'message': 'Could not log you in'
             }, status=status.HTTP_400_BAD_REQUEST)
+        
+class SecurityForgotPasswordAPIView(APIView):
+    pass
+
+class SecurityVerifyOtpForgotPasswordAPIView(APIView):
+    pass
+
+class SecurityNewPasswordAPIView(APIView):
+    pass
+
+class SecurityResendOtpAPIView(APIView):
+    pass
