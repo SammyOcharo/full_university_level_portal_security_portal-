@@ -223,6 +223,9 @@ class SecurityVerifyOtpForgotPasswordAPIView(APIView):
 class SecurityNewPasswordAPIView(APIView):
     authentication_classes = []
     serializer_class = SecurityNewPasswordSerializer
+    
+    def post(self, request):
+        pass
 
 class SecurityResendOtpAPIView(APIView):
     authentication_classes = []
