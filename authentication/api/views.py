@@ -285,7 +285,91 @@ class SecurityVerifyOtpForgotPasswordAPIView(APIView):
     serializer_class = SecurityVerifyOtpForgotPasswordSerializer
 
     def post(self, request):
-        pass
+        try:
+            data = request.data
+
+            serializer = self.serializer_class(data=data)
+
+            if not serializer.is_valid():
+                return Response({
+                    'status': False,
+                    'message': 'Invalid data provided.',
+                    'error': serializer.errors
+                }, status=status.HTTP_400_BAD_REQUEST)
+            
+            email = request.data.get('email')
+            otp = request.data.get('otp')
+
+            otp = int(otp)
+
+            email_regex = r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b'
+            valid_email = re.fullmatch(email_regex, email)
+
+            if not valid_email:
+                return Response({
+                    'status': False,
+                    'message': 'Invalid email provided'
+                }, status=status.HTTP_400_BAD_REQUEST)
+            
+            user = User.objects.filter(email=email)
+
+            if not user.exists():
+                return Response({
+                    'status': False,
+                    'message': 'User does not exist'
+                }, status=status.HTTP_404_NOT_FOUND)
+            
+            user = user.first()
+
+            allowed_roles = ['students']
+            if not user.role.short_name in allowed_roles:
+                return Response({
+                    'status': False,
+                    'message': f'user with this role {user.role.short_name} not allowed to access this portal',
+                }, status=status.HTTP_400_BAD_REQUEST)
+            
+            password_reset_otp = SecurityPasswordResetOtp.objects.filter(email=email)
+
+            if not password_reset_otp.exists():
+                return Response({
+                    'status': False,
+                    'message': 'otp with this email does not exist'
+                }, status=status.HTTP_404_NOT_FOUND)
+            
+            password_reset_otp = password_reset_otp.last()
+            print(type(password_reset_otp.otp))
+            print(type(otp))
+            if password_reset_otp.otp != otp:
+                return Response({
+                    'status': False,
+                    'message': 'otp mismatch'
+                }, status=status.HTTP_400_BAD_REQUEST)
+            
+            if password_reset_otp.is_validated == 1:
+                return Response({
+                    'status': False,
+                    'message': 'otp already validated'
+                }, status=status.HTTP_400_BAD_REQUEST)
+            
+            password_reset_otp.is_validated=1
+            password_reset_otp.save()
+
+            print("otp validated")
+
+
+            return Response({
+                'status': True,
+                'message': 'Otp verified..navigate to reset password'
+            }, status=status.HTTP_200_OK)
+
+        except Exception as e:
+            print(e)
+
+            return Response({
+                'status': False,
+                'message': 'Could not log you in'
+            }, status=status.HTTP_400_BAD_REQUEST)
+
 
 class SecurityNewPasswordAPIView(APIView):
     authentication_classes = []
