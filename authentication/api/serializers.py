@@ -5,10 +5,11 @@ class SecurityLoginSerializer(serializers.Serializer):
     password = serializers.CharField()
 
 class SecurityForgotPasswordSerializer(serializers.Serializer):
-    pass
+    email = serializers.EmailField()
 
 class SecurityVerifyOtpForgotPasswordSerializer(serializers.Serializer):
-    pass
+    email = serializers.EmailField()
+    otp = serializers.IntegerField()
 
 class SecurityNewPasswordSerializer(serializers.Serializer):
     pass
