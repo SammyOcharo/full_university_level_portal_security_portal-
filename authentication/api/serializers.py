@@ -12,7 +12,9 @@ class SecurityVerifyOtpForgotPasswordSerializer(serializers.Serializer):
     otp = serializers.IntegerField()
 
 class SecurityNewPasswordSerializer(serializers.Serializer):
-    pass
+    email = serializers.EmailField()
+    new_password = serializers.CharField(style={'input_type': 'password'}, trim_whitespace=False)
+    confirm_new_password = serializers.CharField(style={'input_type': 'password'}, trim_whitespace=False)
 
 class SecurityResendOtpSerializer(serializers.Serializer):
     pass
