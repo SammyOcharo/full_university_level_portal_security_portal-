@@ -17,4 +17,4 @@ class SecurityNewPasswordSerializer(serializers.Serializer):
     confirm_new_password = serializers.CharField(style={'input_type': 'password'}, trim_whitespace=False)
 
 class SecurityResendOtpSerializer(serializers.Serializer):
-    pass
+   email = serializers.EmailField()
